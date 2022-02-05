@@ -21,8 +21,7 @@ database and model.
         `python ./train_classifier.py data/Disaster_Response.db
         models/classifier.pkl`
 
-2. Go to `app` directory: `cd app`
+2. Run the web app: `python run.py`
 
-3. Run your web app: `python run.py`
-
-4. Click the `PREVIEW` button to open the homepage
+3. Copy the URL into your browser - e.g. http://192.168.1.117:3000/ from
+the line 'Running on http://192.168.1.117:3000/ (Press CTRL+C to quit)'. 
