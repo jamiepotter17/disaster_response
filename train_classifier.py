@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 import re
 import joblib
 import nltk
+from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
@@ -22,6 +23,10 @@ def load_data(database_filepath):
     return X, Y, category_names
 
 def tokenize(text):
+    '''
+    INPUT - (list) list of strings to be tokenised.
+    OUTPUT - (list) list of tokenised strings.
+    '''
 
     # Replace URLs with string 'urlsupplied'
     urlregex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
@@ -33,13 +38,22 @@ def tokenize(text):
     # tokenize text
     tokenized_text = word_tokenize(small_unpunc_text)
 
-    return tokenized_text
+    # lemmatize test
+    lemmatizer = WordNetLemmatizer()
+    lemmatized_text = []
+    for item in tokenized_text:
+        lemmatized_text.append(lemmatizer.lemmatize(item))
 
+    return lemmatized_text
 
 def build_model():
-
+    '''
+    INPUT -
+    OUTPUT pipeline (Pipeline object) returns pipeline object with the
+    parameters found from a prior use of a randomised search.
+    '''
     pipeline = Pipeline([
-        ("vect", CountVectorizer(tokenizer=tokenize, stop_words='english',
+        ("vect", CountVectorizer(tokenizer=tokenize,
         lowercase=False, max_df=0.2, ngram_range=(1, 2))),
         ("tfidf", TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier(
@@ -48,7 +62,7 @@ def build_model():
 
     return pipeline
 
-def evaluate_model(fittedmodel, X_test, Y_test):
+def evaluate_model(fittedmodel, X_test, Y_test, category_names):
     '''
     Iterates over columns of response variables. Prints macro and weighted
     average f1_Score, recall and precision.
@@ -59,6 +73,7 @@ def evaluate_model(fittedmodel, X_test, Y_test):
     test the model with.
     Y_test (2d numpy array, pandas df) - reponse variables you wish to test the
     model with.
+    category_names (list) - list of category_names from the dataframe.
     OUTPUTS:
     -
     '''
@@ -73,8 +88,8 @@ def evaluate_model(fittedmodel, X_test, Y_test):
 
     for i in range(Y_test.shape[1]):
 
-        score_dict = classification_report(predictions[:][i],
-        np.array(Y_test)[:][i], zero_division=0, output_dict=True)
+        score_dict = classification_report(predictions[:][i], np.array(Y_test)[:][i],
+                                                      zero_division=0, output_dict=True)
 
         f1_scores_m.append(score_dict['macro avg']['f1-score'])
         precision_scores_m.append(score_dict['macro avg']['precision'])
@@ -83,7 +98,12 @@ def evaluate_model(fittedmodel, X_test, Y_test):
         precision_scores_w.append(score_dict['weighted avg']['precision'])
         recall_scores_w.append(score_dict['weighted avg']['recall'])
 
-    print("Average macro f1 score is {:.2f}.".format(np.array(f1_scores_m).mean()))
+        print("Scores in category \'{}\':".format(category_names[i]))
+        print("    f1 score:  {:.2f}.".format(f1_scores_m[-1]))
+        print("    Precision: {:.2f}.".format(precision_scores_m[-1]))
+        print("    Recall:    {:.2f}.".format(recall_scores_m[-1]))
+
+    print("\nAverage macro f1 score is {:.2f}.".format(np.array(f1_scores_m).mean()))
     print("Average macro precision score is {:.2f}.".format(np.array(precision_scores_m).mean()))
     print("Average macro recall score is {:.2f}.".format(np.array(recall_scores_m).mean()))
     print("Average weighted f1 score is {:.2f}.".format(np.array(f1_scores_w).mean()))
@@ -109,8 +129,7 @@ def main():
         model.fit(X_train, Y_train)
 
         print('Evaluating model...')
-        #evaluate_model(model, X_test, Y_test, category_names)
-        evaluate_model(model, X_test, Y_test)
+        evaluate_model(model, X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
