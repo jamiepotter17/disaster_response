@@ -24,4 +24,32 @@ database and model.
 2. Run the web app: `python run.py`
 
 3. Copy the URL into your browser - e.g. http://192.168.1.117:3000/ from
-the line 'Running on http://192.168.1.117:3000/ (Press CTRL+C to quit)'. 
+the line 'Running on http://192.168.1.117:3000/ (Press CTRL+C to quit)'.
+
+Please note also that the model used in the classifier has been fine-tuned on
+the curated dataset supplied by Figure Eight, and the pipeline will use those
+hyperparameters. In order to carry out a new Grid Search (or, or accurately,
+a Randomised Search), you will need to run 'ML Pipeline Preparation.ipynb' to
+obtain the best hyperparameters, and then update the model manually in
+'train_classifier.py'.
+
+### File list:
+
+* .gitignore - tells GitHub which files it doesn't need to monitor.
+* 'ETL Pipeline Preparation.ipynb' - Jupyter Notebook file used to develop the
+code for process_data.py.
+* 'ML Pipeline Preparation.ipynb' - Jupyter Notebook file used to develop the
+code for train_classifier.py.
+* README.MD - this file.
+* graphs.py - python module that contains get_graphs(), a function that returns
+the graphs that ultimately get displayed on master.html.
+* process_data.py - python script that runs an ETL pipeline, loading data into
+an SQLite database, specifically a table titled 'messages'.
+* requirements.txt - things should work fine in a standard Anaconda
+environment, but here is a list of all the packages used in my Anaconda
+environment in case you have compatibility issues.  Use
+'pip install requirements.txt' to install the packages.
+* run.py - python script that runs the Flash app that routes traffic to the
+right places.
+* train_classifier.py - python script that runs a ML pipeline, transforming
+data from an SQLite database into a pickle file. 
