@@ -48,16 +48,20 @@ def tokenize(text):
 
 def build_model():
     '''
+    Note that the built model here uses parameters from the RandomisedSearchCV
+    procedure in the 'MP Pipeline Preparation.ipynb' Jupyter Notebook File. To
+    fine tune the parameters with new data, you will need to run that notebook
+    file.
     INPUT -
     OUTPUT pipeline (Pipeline object) returns pipeline object with the
     parameters found from a prior use of a randomised search.
     '''
     pipeline = Pipeline([
         ("vect", CountVectorizer(tokenizer=tokenize,
-        lowercase=False, max_df=0.2, ngram_range=(1, 2))),
+        lowercase=False, max_df=0.2, ngram_range=(1, 3))),
         ("tfidf", TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier(
-        n_estimators=100, min_samples_split=8, min_samples_leaf=1)))
+        n_estimators=100, min_samples_split=8, min_samples_leaf=2)))
         ])
 
     return pipeline
