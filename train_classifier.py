@@ -57,12 +57,10 @@ def build_model():
     parameters found from a prior use of a randomised search.
     '''
     pipeline = Pipeline([
-        ("vect", CountVectorizer(tokenizer=tokenize,
-        lowercase=False, max_df=0.2, ngram_range=(1, 3))),
+        ("vect", CountVectorizer(tokenizer=tokenize, lowercase=False)),
         ("tfidf", TfidfTransformer()),
-        ('clf', MultiOutputClassifier(RandomForestClassifier(
-        n_estimators=100, min_samples_split=8, min_samples_leaf=2)))
-        ])
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
+    ])
 
     return pipeline
 
@@ -114,6 +112,23 @@ def evaluate_model(fittedmodel, X_test, Y_test, category_names):
     print("Average weighted precision score is {:.2f}.".format(np.array(precision_scores_w).mean()))
     print("Average weighted recall score is {:.2f}.".format(np.array(recall_scores_w).mean()))
 
+def finetune_model(model, X_train, Y_train):
+    parameters = {
+        'vect__max_df': [0.4, 0.6, 0.8],
+        'vect__max_features': (None, 10000),
+        'tfidf__smooth_idf': [True, False],
+        'clf__estimator__min_samples_leaf': [2, 4],
+        'clf__estimator__n_estimators': [50, 100, 200]
+    }
+
+    rand_search_cv = RandomizedSearchCV(
+        estimator = model, param_distributions = parameters, n_jobs=-1,
+        random_state=17, verbose=5, n_iter = 20)
+
+    rand_search_cv.fit(X_train, Y_train)
+
+    return rand_search_cv
+
 def save_model(model, model_filepath):
     with open('./models/' + model_filepath, "wb") as f:
         joblib.dump(model, f, compress='zlib')
@@ -135,6 +150,12 @@ def main():
         print('Evaluating model...')
         evaluate_model(model, X_test, Y_test, category_names)
 
+        print('Fine-tuning model (this may take some time)...')
+        model = finetune_model(model, X_train, Y_train)
+
+        print('Evaluating (fine-tuned) model...')
+        evaluate_model(model, X_test, Y_test, category_names)
+
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
 
@@ -144,7 +165,7 @@ def main():
         print('Please provide the filepath of the disaster messages database '\
               'as the first argument and the filepath of the pickle file to '\
               'save the model to as the second argument. \n\nExample: python '\
-              'train_classifier.py ../data/DisasterResponse.db classifier.pkl')
+              'train_classifier.py ./data/DisasterResponse.db classifier.pkl')
 
 
 if __name__ == '__main__':

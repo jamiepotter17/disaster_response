@@ -16,22 +16,15 @@ database and model.
 
     - To run ETL pipeline that cleans data and stores in database
         `python ./process_data.py data/disaster_messages.csv
-        data/disaster_categories.csv data/Disaster_Response.db`
+        data/disaster_categories.csv Disaster_Response.db`
     - To run ML pipeline that trains classifier and saves
         `python ./train_classifier.py data/Disaster_Response.db
-        models/classifier.pkl`
+        classifier.pkl`
 
 2. Run the web app: `python run.py`
 
 3. Copy the URL into your browser - e.g. http://192.168.1.117:3000/ from
 the line 'Running on http://192.168.1.117:3000/ (Press CTRL+C to quit)'.
-
-Please note also that the model used in the classifier has been fine-tuned on
-the curated dataset supplied by Figure Eight, and the pipeline will use those
-hyperparameters. In order to carry out a new Grid Search (or, or accurately,
-a Randomised Search), you will need to run 'ML Pipeline Preparation.ipynb' to
-obtain the best hyperparameters, and then update the model manually in
-'train_classifier.py'.
 
 ### File list:
 
@@ -52,4 +45,4 @@ environment in case you have compatibility issues.  Use
 * run.py - python script that runs the Flash app that routes traffic to the
 right places.
 * train_classifier.py - python script that runs a ML pipeline, transforming
-data from an SQLite database into a pickle file. 
+data from an SQLite database into a pickle file.

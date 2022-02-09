@@ -26,6 +26,9 @@ def clean_data(df):
     # from string to numeric
         categories[column] = categories[column].str[-1:].astype(int)
 
+    # Replace the '2' values in the 'related' column with '1's:
+    df['related']=df['related'].replace(2, 1)
+    
     # drop the original categories column from `df`
     df.drop(columns='categories', inplace=True)
 
